@@ -153,7 +153,7 @@ void dif_vec(double *vec_one, double *vec_two, double *res_vec) {
 
 void show_vec(double *matr, double size) {
 	for (int i = 0; i < size; ++i) {
-		cout << setprecision(16) << matr[i] << "; ";
+		cout <<  matr[i] << "; ";
 	}
 	cout << endl;
 }
@@ -272,7 +272,7 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		// ||A*z_k - b|| / ||b|| < Eps
 		//A*z_k
 		nullify(tmp);
-		matr_on_vec(A, z, tmp);
+		matr_on_vec(A, x_k1, tmp);
 		//A*z_k - b
 		dif_vec(tmp, F, stop_tmp);
 		//||A*z_k - b||
