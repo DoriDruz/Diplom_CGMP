@@ -265,8 +265,8 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		sum_vec(z_k1, tmp, p_k1);
 
 		//Показываем первые 10 решений на каждой итерации
-		cout << "X: " << endl;
-		show_vec(x_k1, 10);
+		//cout << "X: " << endl;
+		//show_vec(x_k1, 10);
 
 		//Условие останова
 		// ||A*z_k - b|| / ||b|| < Eps
