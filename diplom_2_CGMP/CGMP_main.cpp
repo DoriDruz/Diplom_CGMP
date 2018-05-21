@@ -1,4 +1,4 @@
-// Итерац. МСГ с предобуславливателем на процессоре[, многоядерном процессоре и видеокарте]
+// пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ[, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ]
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -172,11 +172,29 @@ void nullify(double *vec) {
 	}
 }
 
-void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
-	//Условие останова. Эпсилон
+void make_rA(double *A, double *C) {
+	for (int i = 0; i < S; ++i) {
+		for (int j = 0; j < 7; ++j) {
+			A[7 * i + j] = A[7 * i + j] * (1 / C[i]);
+		}
+	}
+	//write_in_file(A, S, "rA.dat");
+}
+
+void copy_matr(double *m_one, double *m_two) {
+	for (int i = 0; i < S * 7; ++i) {
+		m_one[i] = m_two[i];
+	}
+}
+
+void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	const double Eps = 0.1;
 
-	//Вектора
+	//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ A
+	double *or_A = new double[S * 7];
+
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	double *x = new double[S];
 	double *r = new double[S];
 	double *p = new double[S];
@@ -187,7 +205,7 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 	double *p_k1 = new double[S];
 	double *z_k1 = new double[S];
 
-	//Коэффициенты
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	double ak = 0;
 	double bk = 0;
 
@@ -204,23 +222,27 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 	double stop_down = 0;
 	int count_tmp = 1;
 
-	//Заполняем все вектора нулями
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	for (int i = 0; i < S; ++i) {
 		x[i] = r[i] = p[i] = z[i] = 0;
 		stop_tmp[i] = Apk[i] = tmp[i] = r_k1[i] = x_k1[i] = p_k1[i] = z_k1[i] = 0;
 	}
 
-	//Подготовка перед циклом
-
-	//r0 = b - A*x0		|x0 = 0 -> A*x0 = 0 -> r0 = b|
-	copy_vec(r, F);
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	//or_A = A;
+	copy_matr(or_A, A);
+	//rA = C^(-1) * A
+	make_rA(A, vec_C);
+	//r0 = b - A*x0		|x0 = 0 -> A*x0 = 0 -> r0 = b|  |r0 = C*b - A*x0?|
+		//copy_vec(r, F);
+	matr_on_vec(C, F, r);
 	//p0 = C*r0
 	matr_on_vec(C, r, p);
 	//z0 = p0
 	copy_vec(z, p);
 
 	while ( !(stop_num < Eps) && count_tmp < S) {
-		cout << "Begin of iteration: " << count_tmp << " / " << S << endl;
+		cout << count_tmp << " / " << S << endl;
 		clock_t begin_CGMR = clock();
 
 		//ak = (r_k, z_k) / (A*p_k, p_k)
@@ -264,15 +286,15 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		//p_k1 = z_k1 + ...
 		sum_vec(z_k1, tmp, p_k1);
 
-		//Показываем первые 10 решений на каждой итерации
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 10 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		//cout << "X: " << endl;
 		//show_vec(x_k1, 10);
 
-		//Условие останова
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		// ||A*z_k - b|| / ||b|| < Eps
 		//A*z_k
 		nullify(tmp);
-		matr_on_vec(A, x_k1, tmp);
+		matr_on_vec(or_A, x_k1, tmp);
 		//A*z_k - b
 		dif_vec(tmp, F, stop_tmp);
 		//||A*z_k - b||
@@ -280,27 +302,26 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		//||b||
 		stop_down = norm_vec(F);
 		//||..|| / ||..||
-		stop_num = 1;
 		stop_num = stop_up / stop_down;
 
-		//Показываем невязку
-		cout << "Nevyazka: " << stop_num << endl << endl;
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		cout << "Diff: " << stop_num << endl;
 		add_nevyazka(stop_num);
 
-		//Копируем вектора
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		copy_vec(x, x_k1);
 		copy_vec(r, r_k1);
 		copy_vec(p, p_k1);
 		copy_vec(z, z_k1);
 
-		//Доп условие для остановки
-		if (count_tmp == S / 32) {
-			write_in_file(x_k1, 1000, "X.dat");
+		//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		if (count_tmp == S / 16) {
+			write_in_file(x_k1, S, "X.dat");
 			break;
 		}
 		++count_tmp;
 
-		//Очищаем вектора
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		nullify(x_k1);
 		nullify(r_k1);
 		nullify(p_k1);
@@ -320,7 +341,7 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 
 	}
 
-	//Очищаем память
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	delete(x);
 	delete(r);
 	delete(p);
@@ -342,26 +363,32 @@ void main() {
 	double *matr_A = new double[S * 7];
 	double *matr_F = new double[S];
 	double *matr_C = new double[S * 7];
+	double *vec_C = new double[S];
 
 	ifstream A;
 	ifstream F;
 	ifstream C;
-	
+	ifstream A3;
+
 	clock_t begin = clock();
 
-	A.open("A_alt.dat");		// 134862 * 7	| A.dat
-	F.open("F.dat");			// 134862		| F.dat
-	C.open("C.dat");			// 134862 * 7	| C.dat
+	A.open("A.dat");		// 134862 * 7	| A.dat
+	F.open("F.dat");		// 134862		| F.dat
+	C.open("C.dat");		// 134862 * 7	| C.dat
+	A3.open("A3.dat");		// 134862		| F.dat
 
 	create_matr(A, matr_A, S * 7);
 	create_matr(F, matr_F, S);
 	create_matr(C, matr_C, S * 7);
+	create_matr(A3, vec_C, S);
 
 	A.close();
 	F.close();
+	C.close();
+	A3.close();
 
 	clear_nevyazka();
-	CGMP(matr_A, matr_F, matr_C, begin_algo);
+	CGMP(matr_A, matr_F, matr_C, vec_C, begin_algo);
 
 	clock_t end = clock();
 	double time = double(end - begin) / CLOCKS_PER_SEC;
@@ -370,6 +397,7 @@ void main() {
 	delete(matr_A);
 	delete(matr_F);
 	delete(matr_C);
+	delete(vec_C);
 
 	system("pause");
 }
