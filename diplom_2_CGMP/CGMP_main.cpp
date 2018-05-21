@@ -265,8 +265,8 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		sum_vec(z_k1, tmp, p_k1);
 
 		//Показываем первые 10 решений на каждой итерации
-		cout << "X: " << endl;
-		show_vec(x_k1, 10);
+		//cout << "X: " << endl;
+		//show_vec(x_k1, 10);
 
 		//Условие останова
 		// ||A*z_k - b|| / ||b|| < Eps
@@ -284,7 +284,7 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		stop_num = stop_up / stop_down;
 
 		//Показываем невязку
-		cout << "Nevyazka: " << stop_num << endl;
+		cout << "Nevyazka: " << stop_num << endl << endl;
 		add_nevyazka(stop_num);
 
 		//Копируем вектора
@@ -312,11 +312,11 @@ void CGMP(double *A, double *F, double *C, clock_t begin_algo) {
 		clock_t end_CGMR = clock();
 
 		double CGMR_time = double(end_CGMR - begin_CGMR) / CLOCKS_PER_SEC;
-		cout << "Iteration runtime: " << CGMR_time << endl << endl;
+		//cout << "Iteration runtime: " << CGMR_time << endl << endl;
 
 		clock_t end_algo = clock();
 		double algo_time = double(end_algo - begin_algo) / CLOCKS_PER_SEC;
-		cout << "Algoritm runtime: " << algo_time << endl;
+		//cout << "Algoritm runtime: " << algo_time << endl;
 
 	}
 
@@ -349,9 +349,9 @@ void main() {
 	
 	clock_t begin = clock();
 
-	A.open("A.dat");		// 134862 * 7	| A.dat
-	F.open("F.dat");		// 134862		| F.dat
-	C.open("C.dat");		// 134862 * 7	| C.dat
+	A.open("A_alt.dat");		// 134862 * 7	| A.dat
+	F.open("F.dat");			// 134862		| F.dat
+	C.open("C.dat");			// 134862 * 7	| C.dat
 
 	create_matr(A, matr_A, S * 7);
 	create_matr(F, matr_F, S);
