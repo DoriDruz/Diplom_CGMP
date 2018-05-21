@@ -1,4 +1,4 @@
-// ������. ��� � �������������������� �� ����������[, ������������ ���������� � ����������]
+// Итерац. МСГ с предобуславливателем на процессоре[, многоядерном процессоре и видеокарте]
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -188,13 +188,13 @@ void copy_matr(double *m_one, double *m_two) {
 }
 
 void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
-	//������� ��������. �������
+	//Условие останова. Эпсилон
 	const double Eps = 0.1;
 
-	//����� ��������� A
+	//Оригинальная матрица A
 	double *or_A = new double[S * 7];
 
-	//�������
+	//Вектора
 	double *x = new double[S];
 	double *r = new double[S];
 	double *p = new double[S];
@@ -205,7 +205,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	double *p_k1 = new double[S];
 	double *z_k1 = new double[S];
 
-	//������������
+	//Коэффициенты
 	double ak = 0;
 	double bk = 0;
 
@@ -221,14 +221,15 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	double stop_up = 0;
 	double stop_down = 0;
 	int count_tmp = 1;
+	double stop_less = INFINITY;
 
-	//��������� ��� ������� ������
+	//Заполняем все вектора нулями
 	for (int i = 0; i < S; ++i) {
 		x[i] = r[i] = p[i] = z[i] = 0;
 		stop_tmp[i] = Apk[i] = tmp[i] = r_k1[i] = x_k1[i] = p_k1[i] = z_k1[i] = 0;
 	}
 
-	//���������� ����� ������
+	//Подготовка перед циклом
 	//or_A = A;
 	copy_matr(or_A, A);
 	//rA = C^(-1) * A
@@ -241,7 +242,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	//z0 = p0
 	copy_vec(z, p);
 
-	while ( !(stop_num < Eps) && count_tmp < S) {
+	while ( !(stop_num < Eps) ) {
 		cout << count_tmp << " / " << S << endl;
 		clock_t begin_CGMR = clock();
 
@@ -286,11 +287,11 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		//p_k1 = z_k1 + ...
 		sum_vec(z_k1, tmp, p_k1);
 
-		//���������� ������ 10 ������� �� ������ ��������
-		//cout << "X: " << endl;
-		//show_vec(x_k1, 10);
+		//Показываем первые 10 решений на каждой итерации
+		cout << "X[0]: " << endl;
+		show_vec(x_k1, 1);
 
-		//������� ��������
+		//Условие останова
 		// ||A*z_k - b|| / ||b|| < Eps
 		//A*z_k
 		nullify(tmp);
@@ -304,24 +305,33 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		//||..|| / ||..||
 		stop_num = stop_up / stop_down;
 
-		//���������� �������
-		cout << "Diff: " << stop_num << endl;
+		if (stop_num < stop_less) {
+			stop_less = stop_num;
+		}
+
+		//Показываем невязку
+		cout << "Diff: " << stop_num  << " " << ((stop_num < Eps) ? "<" : ">") << " " << Eps << " S_t: " << stop_less << endl << endl;
 		add_nevyazka(stop_num);
 
-		//�������� �������
+		if (stop_num < Eps) {
+			write_in_file(x_k1, S, "X_2.dat");
+			break;
+		}
+
+		//Копируем вектора
 		copy_vec(x, x_k1);
 		copy_vec(r, r_k1);
 		copy_vec(p, p_k1);
 		copy_vec(z, z_k1);
 
-		//��� ������� ��� ���������
-		if (count_tmp == S / 16) {
-			write_in_file(x_k1, S, "X.dat");
-			break;
-		}
+		//Доп условие для остановки
+		//if (count_tmp == S / 16) {
+		//	write_in_file(x_k1, S, "X.dat");
+		//	break;
+		//}
 		++count_tmp;
 
-		//������� �������
+		//Очищаем вектора
 		nullify(x_k1);
 		nullify(r_k1);
 		nullify(p_k1);
@@ -341,7 +351,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 
 	}
 
-	//������� ������
+	//Очищаем память
 	delete(x);
 	delete(r);
 	delete(p);
@@ -372,10 +382,10 @@ void main() {
 
 	clock_t begin = clock();
 
-	A.open("A.dat");		// 134862 * 7	| A.dat
-	F.open("F.dat");		// 134862		| F.dat
-	C.open("C.dat");		// 134862 * 7	| C.dat
-	A3.open("A3.dat");		// 134862		| F.dat
+	A.open("A_with_01.dat");		// 134862 * 7	| A.dat
+	F.open("F.dat");				// 134862		| F.dat
+	C.open("C.dat");				// 134862 * 7	| C.dat
+	A3.open("A3.dat");				// 134862		| F.dat
 
 	create_matr(A, matr_A, S * 7);
 	create_matr(F, matr_F, S);
