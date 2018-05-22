@@ -181,6 +181,10 @@ void make_rA(double *A, double *C) {
 	//write_in_file(A, S, "rA.dat");
 }
 
+void matr_C_on_matr(double *A, double *C) {
+	//to do
+}
+
 void copy_matr(double *m_one, double *m_two) {
 	for (int i = 0; i < S * 7; ++i) {
 		m_one[i] = m_two[i];
@@ -291,11 +295,11 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		cout << "X[0]: " << endl;
 		show_vec(x_k1, 1);
 
-		//Условие останова
+		//Условие останова - ДОБАВИТЬ ВМЕСТО b | C * b?
 		// ||A*z_k - b|| / ||b|| < Eps
 		//A*z_k
 		nullify(tmp);
-		matr_on_vec(or_A, x_k1, tmp);
+		matr_on_vec(A, x_k1, tmp);
 		//A*z_k - b
 		dif_vec(tmp, F, stop_tmp);
 		//||A*z_k - b||
