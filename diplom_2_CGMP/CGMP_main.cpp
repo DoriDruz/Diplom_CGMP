@@ -38,6 +38,23 @@ void write_in_file(double *vec, double size, string name) {
 	cout << "End write in file: " <<  endl;
 }
 
+void write_rA_in_file(double *vec) {
+	cout << "Begin write in file" << endl;
+	ofstream result_file;
+	result_file.open("rA.dat", ofstream::trunc);
+
+	for (int i = 1; i < S*7+1; ++i) {
+		result_file << setprecision(16) << vec[i-1] << " ";
+		if (i % 7 == 0) {
+			result_file << endl;
+		}
+	}
+
+	result_file.close();
+
+	cout << "End write in file: " << endl;
+}
+
 void create_matr(ifstream& file, double *matr, double size) {
 	for (int i = 0; i < size; ++i) {
 		file >> setprecision(16) >> matr[i];
@@ -175,10 +192,10 @@ void nullify(double *vec) {
 void make_rA(double *A, double *C) {
 	for (int i = 0; i < S; ++i) {
 		for (int j = 0; j < 7; ++j) {
-			A[7 * i + j] = A[7 * i + j] * (1 / C[i]);
+			A[7 * i + j] *= (1 / C[i]);
 		}
 	}
-	//write_in_file(A, S, "rA.dat");
+	write_rA_in_file(A);
 }
 
 void matr_C_on_matr(double *A, double *C) {
@@ -217,6 +234,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	double *tmp = new double[S];
 	double *Apk = new double[S];
 	double *stop_tmp = new double[S];
+	double *stop_tmp_b = new double[S];
 	double ak_up = 0;
 	double ak_down = 0;
 	double bk_up = 0;
@@ -226,11 +244,12 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	double stop_down = 0;
 	int count_tmp = 1;
 	double stop_less = INFINITY;
+	double stop_max = NULL;
 
 	//Заполняем все вектора нулями
 	for (int i = 0; i < S; ++i) {
 		x[i] = r[i] = p[i] = z[i] = 0;
-		stop_tmp[i] = Apk[i] = tmp[i] = r_k1[i] = x_k1[i] = p_k1[i] = z_k1[i] = 0;
+		stop_tmp_b[i] = stop_tmp[i] = Apk[i] = tmp[i] = r_k1[i] = x_k1[i] = p_k1[i] = z_k1[i] = 0;
 	}
 
 	//Подготовка перед циклом
@@ -239,8 +258,8 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	//rA = C^(-1) * A
 	make_rA(A, vec_C);
 	//r0 = b - A*x0		|x0 = 0 -> A*x0 = 0 -> r0 = b|  |r0 = C*b - A*x0?|
-		//copy_vec(r, F);
-	matr_on_vec(C, F, r);
+	copy_vec(r, F);
+		//matr_on_vec(C, F, r);
 	//p0 = C*r0
 	matr_on_vec(C, r, p);
 	//z0 = p0
@@ -300,26 +319,30 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		//A*z_k
 		nullify(tmp);
 		matr_on_vec(A, x_k1, tmp);
+		//C*b
+		matr_on_vec(C, F, stop_tmp_b);
 		//A*z_k - b
-		dif_vec(tmp, F, stop_tmp);
+		dif_vec(tmp, stop_tmp_b, stop_tmp);
 		//||A*z_k - b||
 		stop_up = norm_vec(stop_tmp);
 		//||b||
-		stop_down = norm_vec(F);
+		stop_down = norm_vec(stop_tmp_b);
 		//||..|| / ||..||
 		stop_num = stop_up / stop_down;
 
 		if (stop_num < stop_less) {
 			stop_less = stop_num;
 		}
+		else if (stop_num > stop_max) {
+			stop_max = stop_num;
+		}
 
 		//Показываем невязку
-		cout << "Diff: " << stop_num  << " " << ((stop_num < Eps) ? "<" : ">") << " " << Eps << " S_t: " << stop_less << endl << endl;
+		cout << "Diff: " << stop_num  << " " << ((stop_num < Eps) ? "<" : ">") << " " << Eps << " | L: " << stop_less << " M: " << stop_max << endl << endl;
 		add_nevyazka(stop_num);
 
 		if (stop_num < Eps) {
 			write_in_file(x_k1, S, "X_2.dat");
-			break;
 		}
 
 		//Копируем вектора
@@ -341,6 +364,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		nullify(p_k1);
 		nullify(z_k1);
 		nullify(stop_tmp);
+		nullify(stop_tmp_b);
 		nullify(tmp);
 		nullify(Apk);
 
@@ -367,6 +391,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	delete(tmp);
 	delete(Apk);
 	delete(stop_tmp);
+	delete(stop_tmp_b);
 }
 
 void main() {
