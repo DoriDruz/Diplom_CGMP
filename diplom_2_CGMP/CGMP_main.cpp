@@ -195,7 +195,7 @@ void make_rA(double *A, double *C) {
 			A[7 * i + j] *= (1 / C[i]);
 		}
 	}
-	write_rA_in_file(A);
+	//write_rA_in_file(A);
 }
 
 void matr_C_on_matr(double *A, double *C) {
@@ -258,8 +258,8 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 	//rA = C^(-1) * A
 	make_rA(A, vec_C);
 	//r0 = b - A*x0		|x0 = 0 -> A*x0 = 0 -> r0 = b|  |r0 = C*b - A*x0?|
-	copy_vec(r, F);
-		//matr_on_vec(C, F, r);
+	//copy_vec(r, F);
+	matr_on_vec(C, F, r);
 	//p0 = C*r0
 	matr_on_vec(C, r, p);
 	//z0 = p0
@@ -311,7 +311,7 @@ void CGMP(double *A, double *F, double *C, double *vec_C, clock_t begin_algo) {
 		sum_vec(z_k1, tmp, p_k1);
 
 		//Показываем первые 10 решений на каждой итерации
-		cout << "X[0]: " << endl;
+		cout << "X[0]: ";
 		show_vec(x_k1, 1);
 
 		//Условие останова - ДОБАВИТЬ ВМЕСТО b | C * b?
@@ -411,8 +411,8 @@ void main() {
 
 	clock_t begin = clock();
 
-	A.open("A_with_01.dat");		// 134862 * 7	| A.dat
-	F.open("F.dat");				// 134862		| F.dat
+	A.open("A_with_minus_and_01.dat");		// 134862 * 7	| A.dat
+	F.open("F_new.dat");				// 134862		| F.dat
 	C.open("C.dat");				// 134862 * 7	| C.dat
 	A3.open("A3.dat");				// 134862		| F.dat
 
